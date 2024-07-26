@@ -1,0 +1,1 @@
+dart --enable-vm-service bin/server.dart
