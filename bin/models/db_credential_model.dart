@@ -1,5 +1,5 @@
-import 'dart:io';
 import '../utils/constants.dart';
+import 'package:path/path.dart' as path;
 
 class DbCredentialModel {
   String userName;
@@ -24,9 +24,16 @@ class DbCredentialModel {
       updatedAt: DateTime.now(),
     );
   }
-
-  String get getDbFolder {
-    return "${Constants.mainDbDir}/db_files/$dbName";
+  Map<String, dynamic> toJson() {
+    return {
+      "userName": userName,
+      "dbPassword": password,
+      "dbName": dbName,
+      "createdAt": createdAt.toIso8601String(),
+      "updatedAt": updatedAt.toIso8601String(),
+      "dbFolder": getDbFolder,
+      "dbFileName": dbFileName,
+    };
   }
 
   String get errorValidation {
@@ -40,5 +47,13 @@ class DbCredentialModel {
       return "dbName shouldn't be empty";
     }
     return "";
+  }
+
+  String get getDbFolder {
+    return path.join(Constants.mainDbDir, dbName);
+  }
+
+  String get dbFileName {
+    return path.join(getDbFolder, "$dbName.json");
   }
 }
