@@ -5,6 +5,18 @@ import 'package:vm_service/vm_service_io.dart';
 import './utils/logger.dart' show StdoutLog;
 import 'package:watcher/watcher.dart';
 import 'package:stream_transform/stream_transform.dart';
+import './utils/constants.dart';
+import "package:path/path.dart" as path;
+
+bool canReload(String changedFilePath) {
+  String requiredPath = path
+      .join(Directory.current.path, Constants.dbFilesDire)
+      .replaceAll(r"\", r"\\");
+  final regex = RegExp('^$requiredPath');
+  bool pathMatched = !(regex.hasMatch(changedFilePath));
+  print("pathMatched: $pathMatched");
+  return pathMatched;
+}
 
 Future<bool> enableHotReload() async {
   var observatoryUri = (await dev.Service.getInfo()).serverUri;
@@ -27,9 +39,11 @@ Future<bool> enableHotReload() async {
         .throttle(
           const Duration(milliseconds: 1000),
         )
-        .listen((_) async {
-      await serviceClient.reloadSources(mainIsolate.id ?? "");
-      print('Server restarted ${DateTime.now()}');
+        .listen((watcher) async {
+      if (canReload(watcher.path)) {
+        await serviceClient.reloadSources(mainIsolate.id ?? "");
+        print('Server restarted ${DateTime.now()}');
+      }
     });
     return true;
   } catch (e) {

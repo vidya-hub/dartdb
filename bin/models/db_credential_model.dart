@@ -1,38 +1,44 @@
-import '../utils/constants.dart';
-import 'package:path/path.dart' as path;
+import 'dart:convert';
 
-class DbCredentialModel {
+import '../utils/constants.dart';
+import '../utils/file_utils/file_utils.dart';
+
+class UserCredentialModel {
   String userName;
   String password;
-  String dbName;
   DateTime createdAt;
-  DateTime updatedAt;
-  DbCredentialModel({
+  String dbQuery;
+  bool isDataExists;
+  UserCredentialModel({
     required this.userName,
     required this.password,
-    required this.dbName,
     required this.createdAt,
-    required this.updatedAt,
+    this.dbQuery = "",
+    required this.isDataExists,
   });
 
-  factory DbCredentialModel.fromJson(Map<String, dynamic> json) {
-    return DbCredentialModel(
-      userName: json["userName"] ?? "",
-      password: json["dbPassword"] ?? "",
-      dbName: json["dbName"] ?? "",
+  factory UserCredentialModel.fromJson(String body) {
+    Map<String, dynamic> decodedBody = json.decode(body);
+    Map<String, dynamic>? mainDbJson;
+    String userName = decodedBody["userName"] ?? "";
+    if (userName.isNotEmpty) {
+      String mainDbJsonFile = Constants.mainDbJsonFile;
+      mainDbJson = (readFile(mainDbJsonFile) ?? {});
+    }
+
+    return UserCredentialModel(
+      userName: userName,
+      password: decodedBody["password"] ?? "",
       createdAt: DateTime.now(),
-      updatedAt: DateTime.now(),
+      dbQuery: decodedBody["query"] ?? "",
+      isDataExists: mainDbJson?[userName] != null,
     );
   }
   Map<String, dynamic> toJson() {
     return {
       "userName": userName,
-      "dbPassword": password,
-      "dbName": dbName,
-      "createdAt": createdAt.toIso8601String(),
-      "updatedAt": updatedAt.toIso8601String(),
-      "dbFolder": getDbFolder,
-      "dbFileName": dbFileName,
+      "password": password,
+      "createdAt": createdAt.toIso8601String()
     };
   }
 
@@ -43,17 +49,7 @@ class DbCredentialModel {
     if (password.isEmpty) {
       return "password shouldn't be empty";
     }
-    if (dbName.isEmpty) {
-      return "dbName shouldn't be empty";
-    }
+
     return "";
-  }
-
-  String get getDbFolder {
-    return path.join(Constants.mainDbDir, dbName);
-  }
-
-  String get dbFileName {
-    return path.join(getDbFolder, "$dbName.json");
   }
 }
