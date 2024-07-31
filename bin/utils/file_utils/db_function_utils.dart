@@ -26,7 +26,7 @@ class DbFunctionUtils {
     String dbPath = path.join(
       Constants.dbFilesDire,
       userName,
-      "${dbName}_db",
+      dbName,
     );
     String dbCollectionsPath = path.join(
       dbPath,
@@ -77,9 +77,13 @@ class DbFunctionUtils {
     String dbPath = path.join(
       Constants.dbFilesDire,
       userName,
-      "${dbName}_db",
+      dbName,
     );
-
+    if (!Directory(dbPath).existsSync()) {
+      throw DatabaseExecException(
+        "DB: $dbName not exists.",
+      );
+    }
     String dbCollectionsListPath = path.join(
       dbPath,
       "${dbName}_collections.json",
@@ -124,7 +128,7 @@ class DbFunctionUtils {
     String dbPath = path.join(
       Constants.dbFilesDire,
       userName,
-      "${dbName}_db",
+      dbName,
     );
     if (!Directory(dbPath).existsSync()) {
       throw DatabaseExecException("Database does not exist.");
@@ -143,20 +147,35 @@ class DbFunctionUtils {
     };
   }
 
+  static List<String> getListOfDatabases({
+    required String userName,
+  }) {
+    Directory userDirectory = Directory(path.join(
+      Constants.dbFilesDire,
+      userName,
+    ));
+    if (userDirectory.existsSync()) {
+      return userDirectory.listSync().map((ele) {
+        return ele.path.split("\\").last;
+      }).toList();
+    }
+    return [];
+  }
+
   static Map<String, dynamic> getData({
     required String collectionName,
     required String dbName,
     required String userName,
     required String filter,
   }) {
-    String currentCollectionPath = path.join(
-      Constants.dbFilesDire,
-      userName,
-      "${dbName}_db",
-      "${dbName}_collections",
-      "$collectionName.json",
-    );
-    Map<String, dynamic>? collectionData = readFile(currentCollectionPath);
+    // String currentCollectionPath = path.join(
+    //   Constants.dbFilesDire,
+    //   userName,
+    //   dbName,
+    //   "${dbName}_collections",
+    //   "$collectionName.json",
+    // );
+    // Map<String, dynamic>? collectionData = readFile(currentCollectionPath);
     return {};
   }
 }

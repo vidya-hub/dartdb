@@ -9,7 +9,8 @@ import '../utils/file_utils/db_function_utils.dart';
 class DbHandleRouter {
   Router get router {
     final dbRouter = Router();
-    dbRouter.post("/createUser", _createDbHandler);
+    dbRouter.post("/register", _createUserHandler);
+    dbRouter.post("/login", _getUserHandler);
     dbRouter.post("/query", _dbQueryHandler);
     return dbRouter;
   }
@@ -51,16 +52,14 @@ class DbHandleRouter {
       if (e is DatabaseExecException) {
         return _createErrorResponse(400, e.message);
       }
-      return Response(
-        400,
-        body: json.encode(
-          {"msg": e.toString()},
-        ),
+      return _createErrorResponse(
+        404,
+        e.toString(),
       );
     }
   }
 
-  Future<Response> _createDbHandler(Request request) async {
+  Future<Response> _createUserHandler(Request request) async {
     String requestBody = await request.readAsString();
 
     if (requestBody.isEmpty) {
@@ -94,7 +93,48 @@ class DbHandleRouter {
     return Response.ok(
       json.encode({
         "message": "OK",
-        "details": json.decode(requestBody),
+        "data": json.decode(requestBody),
+      }),
+    );
+  }
+
+  Future<Response> _getUserHandler(Request request) async {
+    String requestBody = await request.readAsString();
+
+    if (requestBody.isEmpty) {
+      return _createErrorResponse(
+        404,
+        "Please provide DB details.",
+      );
+    }
+
+    UserCredentialModel userCredentials = UserCredentialModel.fromJson(
+      requestBody,
+    );
+
+    if (userCredentials.errorValidation.isNotEmpty) {
+      return _createErrorResponse(
+        400,
+        userCredentials.errorValidation,
+      );
+    }
+    if (userCredentials.isValidCredentials) {
+      return Response.ok(
+        json.encode({
+          "message": "OK",
+          "data": json.decode(requestBody),
+        }),
+      );
+    }
+
+    DbFunctionUtils.saveUserCredentials(
+      userCredentials: userCredentials,
+    );
+
+    return Response.ok(
+      json.encode({
+        "message": "OK",
+        "data": json.decode(requestBody),
       }),
     );
   }
@@ -105,7 +145,10 @@ class DbHandleRouter {
   ) {
     return Response(
       statusCode,
-      body: json.encode({"message": message}),
+      body: json.encode({
+        "message": message,
+        "data": null,
+      }),
       headers: {
         'Content-Type': 'application/json',
       },

@@ -9,18 +9,21 @@ class UserCredentialModel {
   DateTime createdAt;
   String dbQuery;
   bool isDataExists;
+  bool isValidCredentials;
   UserCredentialModel({
     required this.userName,
     required this.password,
     required this.createdAt,
     this.dbQuery = "",
     required this.isDataExists,
+    required this.isValidCredentials,
   });
 
   factory UserCredentialModel.fromJson(String body) {
     Map<String, dynamic> decodedBody = json.decode(body);
     Map<String, dynamic>? mainDbJson;
     String userName = decodedBody["userName"] ?? "";
+    String password = decodedBody["password"] ?? "";
     if (userName.isNotEmpty) {
       String mainDbJsonFile = Constants.mainDbJsonFile;
       mainDbJson = (readFile(mainDbJsonFile) ?? {});
@@ -28,10 +31,15 @@ class UserCredentialModel {
 
     return UserCredentialModel(
       userName: userName,
-      password: decodedBody["password"] ?? "",
+      password: password,
       createdAt: DateTime.now(),
       dbQuery: decodedBody["query"] ?? "",
       isDataExists: mainDbJson?[userName] != null,
+      isValidCredentials: _isValidCredentials(
+        mainDbJson,
+        userName,
+        password,
+      ),
     );
   }
   Map<String, dynamic> toJson() {
@@ -40,6 +48,16 @@ class UserCredentialModel {
       "password": password,
       "createdAt": createdAt.toIso8601String()
     };
+  }
+
+  static bool _isValidCredentials(
+    Map? credentialsJson,
+    String userName,
+    String password,
+  ) {
+    return credentialsJson != null &&
+        credentialsJson[userName] != null &&
+        credentialsJson[userName]["password"] == password;
   }
 
   String get errorValidation {

@@ -15,6 +15,8 @@ class QueryParser {
       // Matching query patterns and delegating to appropriate handlers
       if (RegExp(Constants.CREATE_DB).hasMatch(query)) {
         return _handleCreateDb();
+      } else if (RegExp(Constants.GET_DATABASES).hasMatch(query)) {
+        return _getDatabases(userName);
       } else if (RegExp(Constants.GET_COLLECTIONS).hasMatch(query)) {
         return _handleGetCollections();
       } else if (RegExp(Constants.CREATE_COLLECTION).hasMatch(query)) {
@@ -129,6 +131,16 @@ class QueryParser {
         dbName: dbName,
         userName: userName,
       );
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Map<String, dynamic> _getDatabases(String dbName) {
+    try {
+      return {
+        "dbList": DbFunctionUtils.getListOfDatabases(userName: userName),
+      };
     } catch (e) {
       rethrow;
     }

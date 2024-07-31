@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:pretty_print_json/pretty_print_json.dart';
+
 void createDirectory(String directoryName) {
   Directory directory = Directory(directoryName);
   directory.createSync(recursive: true);
@@ -39,7 +41,7 @@ void writeFile({
   try {
     Directory currentDirectory = Directory.current;
     File("${currentDirectory.path}/$filename").writeAsStringSync(
-      jsonEncode(data),
+      prettyJson(jsonEncode(data)),
     );
   } catch (e) {
     throw Exception("File Write error $e");
