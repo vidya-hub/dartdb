@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import '../utils/constants.dart';
 import '../utils/file_utils/db_function_utils.dart';
 
@@ -58,13 +60,34 @@ class QueryParser {
     final match = RegExp(Constants.CREATE_COLLECTION).firstMatch(query);
     final dbName = match?.group(1);
     final collectionName = match?.group(2);
+    List<dynamic> params = [];
+    Map<dynamic, dynamic> types = {};
+
     if (dbName == null ||
         dbName.isEmpty ||
         collectionName == null ||
         collectionName.isEmpty) {
       throw FormatException("Database and collection names cannot be empty.");
     }
-    return _createCollection(dbName, collectionName);
+    print("Here i am");
+    if (match?.group(3) != null && match?.group(4) != null) {
+      // Extract params and types
+      final paramsJson = '[${match?.group(3)}]';
+      final typesJson = '{${match?.group(4)}}';
+      print({paramsJson, typesJson});
+      try {
+        params = json.decode(paramsJson);
+        types = json.decode(typesJson);
+      } catch (e) {
+        throw FormatException('Error Parsing Schema: $e');
+      }
+    }
+    return _createCollection(
+      dbName,
+      collectionName,
+      params: params,
+      types: types,
+    );
   }
 
   // Handle the 'get data' command
@@ -111,12 +134,19 @@ class QueryParser {
     return {};
   }
 
-  Map<String, dynamic> _createCollection(String dbName, String collectionName) {
+  Map<String, dynamic> _createCollection(
+    String dbName,
+    String collectionName, {
+    List<dynamic> params = const [],
+    Map<dynamic, dynamic> types = const {},
+  }) {
     try {
       DbFunctionUtils.createCollection(
         dbName: dbName,
         userName: userName,
         collectionName: collectionName,
+        params: params,
+        types: types,
       );
     } catch (e) {
       rethrow;

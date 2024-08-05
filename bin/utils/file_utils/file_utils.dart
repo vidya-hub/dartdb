@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:pretty_print_json/pretty_print_json.dart';
+import 'package:path/path.dart' as path;
 
 void createDirectory(String directoryName) {
   Directory directory = Directory(directoryName);
@@ -23,8 +24,10 @@ void createFile(String filename) {
 Map<String, dynamic>? readFile(String filename) {
   try {
     Directory currentDirectory = Directory.current;
-    String fileContent =
-        File("${currentDirectory.path}/$filename").readAsStringSync();
+    String dirPath = path.join(".", currentDirectory.path, filename);
+    print(dirPath);
+
+    String fileContent = File(dirPath).readAsStringSync();
     if (fileContent.isEmpty) {
       return {};
     }
@@ -40,7 +43,9 @@ void writeFile({
 }) {
   try {
     Directory currentDirectory = Directory.current;
-    File("${currentDirectory.path}/$filename").writeAsStringSync(
+    String dirPath = path.join(".", currentDirectory.path, filename);
+    print(dirPath);
+    File(dirPath).writeAsStringSync(
       prettyJson(jsonEncode(data)),
     );
   } catch (e) {

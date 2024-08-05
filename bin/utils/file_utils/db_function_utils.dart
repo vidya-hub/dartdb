@@ -73,6 +73,8 @@ class DbFunctionUtils {
     required String dbName,
     required String userName,
     required String collectionName,
+    List<dynamic> params = const [],
+    Map<dynamic, dynamic> types = const {},
   }) {
     String dbPath = path.join(
       Constants.dbFilesDire,
@@ -81,7 +83,7 @@ class DbFunctionUtils {
     );
     if (!Directory(dbPath).existsSync()) {
       throw DatabaseExecException(
-        "DB: $dbName not exists.",
+        "DB: '$dbName' not exists.",
       );
     }
     String dbCollectionsListPath = path.join(
@@ -92,6 +94,11 @@ class DbFunctionUtils {
       dbPath,
       "${dbName}_collections",
       "$collectionName.json",
+    );
+    String currentCollectionSchemaPath = path.join(
+      dbPath,
+      "${dbName}_collections",
+      "$collectionName.schema.json",
     );
 
     createFile(dbCollectionsListPath);
@@ -117,6 +124,17 @@ class DbFunctionUtils {
         "createdAt": dt,
         "updatedAt": dt,
         "data": [],
+      },
+    );
+    writeFile(
+      filename: currentCollectionSchemaPath,
+      data: {
+        "createdAt": dt,
+        "updatedAt": dt,
+        "schema": {
+          "params": params,
+          "types": types,
+        },
       },
     );
   }

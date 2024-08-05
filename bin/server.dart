@@ -9,6 +9,7 @@ void main(List<String> args) async {
 // Configure routes.
   final mainRouter = Router();
   mainRouter.mount("/db", DbHandleRouter().router.call);
+
   await enableHotReload();
 
   final ip = InternetAddress.anyIPv4;

@@ -67,6 +67,9 @@ class UserCredentialModel {
     if (password.isEmpty) {
       return "password shouldn't be empty";
     }
+    if (!isValidCredentials) {
+      return "Invalid credentials";
+    }
 
     return "";
   }

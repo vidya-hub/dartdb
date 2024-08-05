@@ -127,10 +127,6 @@ class DbHandleRouter {
       );
     }
 
-    DbFunctionUtils.saveUserCredentials(
-      userCredentials: userCredentials,
-    );
-
     return Response.ok(
       json.encode({
         "message": "OK",
